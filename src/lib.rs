@@ -12,24 +12,22 @@
 //! 
 //! # Usage Example
 //! ```
-//! use core::sync::atomic::{AtomicU8, Ordering};
+//! use core::sync::atomic::{AtomicU8, Ordering::Relaxed};
 //! use atomic_bitfield::AtomicBitField as _;
-//! 
-//! let relaxed = Ordering::Relaxed;
 //! 
 //! let flags = AtomicU8::new(0b1000);
 //! 
-//! let prev_state = flags.set_bit(0, relaxed);
+//! let prev_state = flags.set_bit(0, Relaxed);
 //! assert_eq!(prev_state, false);
-//! assert_eq!(flags.load(relaxed), 0b1001);
+//! assert_eq!(flags.load(Relaxed), 0b1001);
 //! 
-//! let prev_state = flags.toggle_bit(3, relaxed);
+//! let prev_state = flags.toggle_bit(3, Relaxed);
 //! assert_eq!(prev_state, true);
-//! assert_eq!(flags.load(relaxed), 0b0001);
+//! assert_eq!(flags.load(Relaxed), 0b0001);
 //! 
-//! let prev_state = flags.swap_bit(0, false, relaxed);
+//! let prev_state = flags.swap_bit(0, false, Relaxed);
 //! assert_eq!(prev_state, true);
-//! assert_eq!(flags.load(relaxed), 0b0000);
+//! assert_eq!(flags.load(Relaxed), 0b0000);
 //! ```
 
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
