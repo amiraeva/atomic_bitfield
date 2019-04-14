@@ -6,7 +6,9 @@ edition = "2018"
 license = "MIT"
 description = "A bitfield abstraction for the core atomic types."
 repository = "https://github.com/amiraeva/atomic_bitfield.git"
-documentation = "https://doc.rs/atomic_bitfield"
+
+categories = ["no-std", "embedded", "concurrency"]
+keywords = ["atomic", "no_std", "bitfields", "bitflags", "bits"]
 
 [features]
 default = []
