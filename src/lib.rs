@@ -11,8 +11,12 @@
 //! that instead to detect which atomic types are available.
 
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 #![forbid(unsafe_code)]
+
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck;
 
 use bit_field::BitField as _;
 use core::{
@@ -64,6 +68,13 @@ pub trait AtomicBitField: Sized {
 	///
 	/// This method will panic if the bit index is out of bounds of the bit field.
 	fn reset_bit(&self, bit: usize, ord: Ordering) -> bool;
+
+	/// Atomically toggles the bit (`0` -> `1`, `1` -> `0`) at index `bit` (zero-indexed).
+	///
+	/// ## Panics
+	///
+	/// This method will panic if the bit index is out of bounds of the bit field.
+	fn toggle_bit(&self, bit: usize, ord: Ordering);
 }
 
 macro_rules! atomic_bitfield_impl_generate {
@@ -87,6 +98,12 @@ macro_rules! atomic_bitfield_impl_generate {
 				assert!(bit < Self::bit_len());
 				let prev = self.fetch_and(!(1 << bit), ord);
 				prev.get_bit(bit)
+			}
+
+			#[inline]
+			fn toggle_bit(&self, bit: usize, ord: Ordering) {
+				assert!(bit < Self::bit_len());
+				self.fetch_xor(1 << bit, ord);
 			}
 		}
 	)*)
