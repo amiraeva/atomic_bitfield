@@ -9,6 +9,28 @@
 //!
 //! The `nightly` feature of this crate enables `target_has_atomic` and uses
 //! that instead to detect which atomic types are available.
+//! 
+//! # Usage Example
+//! ```
+//! use core::sync::atomic::{AtomicU8, Ordering};
+//! use atomic_bitfield::AtomicBitField as _;
+//! 
+//! let relaxed = Ordering::Relaxed;
+//! 
+//! let flags = AtomicU8::new(0b1000);
+//! 
+//! let prev_state = flags.set_bit(0, relaxed);
+//! assert_eq!(prev_state, false);
+//! assert_eq!(flags.load(relaxed), 0b1001);
+//! 
+//! let prev_state = flags.toggle_bit(3, relaxed);
+//! assert_eq!(prev_state, true);
+//! assert_eq!(flags.load(relaxed), 0b0001);
+//! 
+//! let prev_state = flags.swap_bit(0, false, relaxed);
+//! assert_eq!(prev_state, true);
+//! assert_eq!(flags.load(relaxed), 0b0000);
+//! ```
 
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
 #![cfg_attr(not(test), no_std)]
