@@ -101,47 +101,72 @@ where
 	ints.map(|&x| Into::<Int>::into(x)).eq(flippedflipped_ints)
 }
 
-quickcheck::quickcheck! {
-	fn bit_flipping_u8(test_vals: Vec<(u8, u8)>) -> bool {
-		bit_flipping::<AtomicU8, _>(test_vals)
-	}
+// toggles a bit, toggles it back, outputs if the result is the same as the original
+fn bit_toggling<A, Int>(test_vals: Vec<(Int, u8)>) -> bool 
+where
+	A: AtomicBitField + AtomicLoad<Inner = Int> + From<Int>,
+	Int: Copy + PartialEq
+{
+	let ints = test_vals.iter().map(|(int, _)| *int);
+	
+	let toggle = |(val, bit): &(A, u8)| {
+		val.toggle_bit(*bit as _, Relaxed);
+	};
 
-	fn bit_flipping_i8(test_vals: Vec<(i8, u8)>) -> bool {
-		bit_flipping::<AtomicI8, _>(test_vals)
-	}
+	let to_int = |(val, _): (A, _)| val.load();
 
-	fn bit_flipping_u16(test_vals: Vec<(u16, u8)>) -> bool {
-		bit_flipping::<AtomicU16, _>(test_vals)
-	}
-
-	fn bit_flipping_i16(test_vals: Vec<(i16, u8)>) -> bool {
-		bit_flipping::<AtomicI16, _>(test_vals)
-	}
-
-	fn bit_flipping_u32(test_vals: Vec<(u32, u8)>) -> bool {
-		bit_flipping::<AtomicU32, _>(test_vals)
-	}
-
-	fn bit_flipping_i32(test_vals: Vec<(i32, u8)>) -> bool {
-		bit_flipping::<AtomicI32, _>(test_vals)
-	}
-
-	fn bit_flipping_usize(test_vals: Vec<(usize, u8)>) -> bool {
-		bit_flipping::<AtomicUsize, _>(test_vals)
-	}
-
-	fn bit_flipping_isize(test_vals: Vec<(isize, u8)>) -> bool {
-		bit_flipping::<AtomicIsize, _>(test_vals)
-	}
+	test_vals.iter()
+		.map(|(val, bit)| (A::from(*val), bit & (A::bit_len() - 1) as u8))
+		.inspect(toggle)
+		.inspect(toggle)
+		.map(to_int)
+		.eq(ints)
 }
+
+macro_rules! bit_manipulation_test_impl {
+	($flip:ident, $toggle:ident; $($atomic_t:ty, $primitive_t:ident);*) => (
+		mod $flip {
+			use super::*;
+			$(
+				quickcheck::quickcheck! {
+					fn $primitive_t(test_vals: Vec<($primitive_t, u8)>) -> bool {
+						bit_flipping::<$atomic_t, _>(test_vals)
+					}
+				}
+			)*
+		}
+
+		mod $toggle {
+			use super::*;
+			$(
+				quickcheck::quickcheck! {
+					fn $primitive_t(test_vals: Vec<($primitive_t, u8)>) -> bool {
+						bit_toggling::<$atomic_t, _>(test_vals)
+					}
+				}
+			)*
+		}
+	)
+}
+
+bit_manipulation_test_impl![
+	bit_flip, bit_toggle;
+
+	AtomicU8, u8;
+	AtomicU16, u16;
+	AtomicU32, u32;
+	AtomicUsize, usize;
+
+	AtomicI8, i8;
+	AtomicI16, i16;
+	AtomicI32, i32;
+	AtomicIsize, isize
+];
 
 #[cfg(target_pointer_width = "64")]
-quickcheck::quickcheck! {
-	fn bit_flipping_u64(test_vals: Vec<(u64, u8)>) -> bool {
-		bit_flipping::<AtomicU64, _>(test_vals)
-	}
+bit_manipulation_test_impl![
+	bit_flip_64, bit_toggle_64;
 
-	fn bit_flipping_i64(test_vals: Vec<(i64, u8)>) -> bool {
-		bit_flipping::<AtomicI64, _>(test_vals)
-	}
-}
+	AtomicU64, u64;
+	AtomicI64, i64
+];

@@ -9,22 +9,22 @@
 //!
 //! The `nightly` feature of this crate enables `target_has_atomic` and uses
 //! that instead to detect which atomic types are available.
-//! 
+//!
 //! # Usage Example
 //! ```
 //! use core::sync::atomic::{AtomicU8, Ordering::Relaxed};
 //! use atomic_bitfield::AtomicBitField as _;
-//! 
+//!
 //! let flags = AtomicU8::new(0b1000);
-//! 
+//!
 //! let prev_state = flags.set_bit(0, Relaxed);
 //! assert_eq!(prev_state, false);
 //! assert_eq!(flags.load(Relaxed), 0b1001);
-//! 
+//!
 //! let prev_state = flags.toggle_bit(3, Relaxed);
 //! assert_eq!(prev_state, true);
 //! assert_eq!(flags.load(Relaxed), 0b0001);
-//! 
+//!
 //! let prev_state = flags.swap_bit(0, false, Relaxed);
 //! assert_eq!(prev_state, true);
 //! assert_eq!(flags.load(Relaxed), 0b0000);
@@ -64,7 +64,7 @@ pub trait AtomicBitField: Sized {
 		if new_val {
 			self.set_bit(bit, ord)
 		} else {
-			self.reset_bit(bit, ord)
+			self.clear_bit(bit, ord)
 		}
 	}
 
@@ -87,7 +87,7 @@ pub trait AtomicBitField: Sized {
 	/// ## Panics
 	///
 	/// This method will panic if the bit index is out of bounds of the bit field.
-	fn reset_bit(&self, bit: usize, ord: Ordering) -> bool;
+	fn clear_bit(&self, bit: usize, ord: Ordering) -> bool;
 
 	/// Atomically toggles the bit (`0 -> 1`, `1 -> 0`) at index `bit` (zero-indexed), returning the previous value.
 	///
@@ -114,7 +114,7 @@ macro_rules! atomic_bitfield_impl_generate {
 			}
 
 			#[inline]
-			fn reset_bit(&self, bit: usize, ord: Ordering) -> bool {
+			fn clear_bit(&self, bit: usize, ord: Ordering) -> bool {
 				assert!(bit < Self::bit_len());
 				let prev = self.fetch_and(!(1 << bit), ord);
 				prev.get_bit(bit)
@@ -147,11 +147,11 @@ cfg_if::cfg_if! {
 		#[cfg(target_has_atomic = "ptr")]
 		atomic_bitfield_impl_generate!(atomic::AtomicUsize, atomic::AtomicIsize);
 	} else {
-		use atomic::{AtomicU8, AtomicU16, AtomicU32, AtomicUsize, AtomicI8, AtomicI16, AtomicI32, AtomicIsize};
+		use atomic::*;
 		atomic_bitfield_impl_generate!(AtomicU8, AtomicU16, AtomicU32, AtomicUsize, AtomicI8, AtomicI16, AtomicI32, AtomicIsize);
 
 		#[cfg(target_pointer_width = "64")]
-		atomic_bitfield_impl_generate!(atomic::AtomicU64, atomic::AtomicI64);
+		atomic_bitfield_impl_generate!(AtomicU64, AtomicI64);
 	}
 }
 
