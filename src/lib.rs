@@ -82,7 +82,7 @@ pub trait AtomicBitField: Sized {
 	/// This method will panic if the bit index is out of bounds of the bit field.
 	fn set_bit(&self, bit: usize, ord: Ordering) -> bool;
 
-	/// Atomically resets the bit to `false` at index `bit` (zero-indexed), returning the previous value.
+	/// Atomically clears the bit (sets to `false`) at index `bit` (zero-indexed), returning the previous value.
 	///
 	/// ## Panics
 	///
