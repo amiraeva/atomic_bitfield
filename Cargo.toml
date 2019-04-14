@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Amer Safdari <amersafdari@gmail.com>"]
 edition = "2018"
 license = "MIT"
+description = "A bitfield abstraction for the core atomic types."
 
 [features]
 default = []

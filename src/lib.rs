@@ -1,4 +1,5 @@
-//! Provides a bitfield abstraction for the core atomic types. This crate is `no_std` compatible
+//! # Atomic Bitfield
+//!  Provides a bitfield abstraction for the core atomic types. This crate is `no_std` compatible
 //! by default, and does not itself use any `unsafe` code.
 //!
 //! __Note__: On `stable` this crate assumes the presence of the following atomics
@@ -33,10 +34,6 @@
 #![cfg_attr(feature = "nightly", feature(cfg_target_has_atomic))]
 #![cfg_attr(not(test), no_std)]
 #![forbid(unsafe_code)]
-
-#[cfg(test)]
-#[macro_use]
-extern crate quickcheck;
 
 use bit_field::BitField as _;
 use core::{

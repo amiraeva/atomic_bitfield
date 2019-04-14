@@ -1,4 +1,4 @@
-#[macro_use(quickcheck)]
+use quickcheck::quickcheck;
 
 use super::AtomicBitField;
 
@@ -28,6 +28,7 @@ where
 	(A::from(*int), bit & (A::bit_len() - 1) as u8)
 }
 
+// sets a bit, swaps it back, outputs if the result is the same as the original
 fn bit_flipping<A, Int>(test_vals: Vec<(Int, u8)>) -> bool
 where
 	A: AtomicBitField + AtomicLoad<Inner = Int> + From<Int>,
@@ -82,7 +83,7 @@ macro_rules! bit_manipulation_test_impl {
 		mod $flip {
 			use super::*;
 			$(
-				quickcheck::quickcheck! {
+				quickcheck! {
 					fn $primitive_t(test_vals: Vec<($primitive_t, u8)>) -> bool {
 						bit_flipping::<$atomic_t, _>(test_vals)
 					}
@@ -93,7 +94,7 @@ macro_rules! bit_manipulation_test_impl {
 		mod $toggle {
 			use super::*;
 			$(
-				quickcheck::quickcheck! {
+				quickcheck! {
 					fn $primitive_t(test_vals: Vec<($primitive_t, u8)>) -> bool {
 						bit_toggling::<$atomic_t, _>(test_vals)
 					}
