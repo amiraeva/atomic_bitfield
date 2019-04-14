@@ -1,4 +1,5 @@
 # atomic_bitfield
+[![Latest Version]][crates.io] [![Documentation]][docs.rs] ![License]
 
 ## Atomic Bitfield
  Provides a bitfield abstraction for the core atomic types. This crate is `no_std` compatible
@@ -33,4 +34,12 @@ assert_eq!(prev_state, true);
 assert_eq!(flags.load(Relaxed), 0b0000);
 ```
 
-License: MIT
+# License
+This crate is licensed under the MIT license.
+
+[Latest Version]: https://img.shields.io/crates/v/atomic_bitfield.svg
+[Documentation]: https://docs.rs/atomic_bitfield/badge.svg
+[docs.rs]: https://docs.rs/atomic_bitfield
+[License]: https://img.shields.io/crates/l/atomic_bitfield.svg
+[crates.io]: https://crates.io/crates/atomic_bitfield
+
