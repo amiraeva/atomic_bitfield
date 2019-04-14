@@ -69,12 +69,12 @@ pub trait AtomicBitField: Sized {
 	/// This method will panic if the bit index is out of bounds of the bit field.
 	fn reset_bit(&self, bit: usize, ord: Ordering) -> bool;
 
-	/// Atomically toggles the bit (`0` -> `1`, `1` -> `0`) at index `bit` (zero-indexed).
+	/// Atomically toggles the bit (`0 -> 1`, `1 -> 0`) at index `bit` (zero-indexed), returning the previous value.
 	///
 	/// ## Panics
 	///
 	/// This method will panic if the bit index is out of bounds of the bit field.
-	fn toggle_bit(&self, bit: usize, ord: Ordering);
+	fn toggle_bit(&self, bit: usize, ord: Ordering) -> bool;
 }
 
 macro_rules! atomic_bitfield_impl_generate {
@@ -101,9 +101,10 @@ macro_rules! atomic_bitfield_impl_generate {
 			}
 
 			#[inline]
-			fn toggle_bit(&self, bit: usize, ord: Ordering) {
+			fn toggle_bit(&self, bit: usize, ord: Ordering) -> bool {
 				assert!(bit < Self::bit_len());
-				self.fetch_xor(1 << bit, ord);
+				let prev = self.fetch_xor(1 << bit, ord);
+				prev.get_bit(bit)
 			}
 		}
 	)*)
@@ -129,7 +130,7 @@ cfg_if::cfg_if! {
 		use atomic::{AtomicU8, AtomicU16, AtomicU32, AtomicUsize, AtomicI8, AtomicI16, AtomicI32, AtomicIsize};
 		atomic_bitfield_impl_generate!(AtomicU8, AtomicU16, AtomicU32, AtomicUsize, AtomicI8, AtomicI16, AtomicI32, AtomicIsize);
 
-		#[cfg(target_ptr_width = "64")]
+		#[cfg(target_pointer_width = "64")]
 		atomic_bitfield_impl_generate!(atomic::AtomicU64, atomic::AtomicI64);
 	}
 }
